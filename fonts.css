@@ -1,0 +1,9 @@
+/* Schrift "Inter": nur wenn lokal installiert, sonst Systemschrift (Segoe UI, Arial ...).
+   Es werden keine Schriften von Google oder anderen Servern geladen. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: local('Inter'), local('Inter Variable');
+}

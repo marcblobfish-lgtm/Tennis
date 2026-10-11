@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SV Niederroth – Anmelden</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{
+  --schwarz:#1c1c1e;
+  --gelb:#f2c114;
+  --gelb-licht:#fdf3d0;
+  --hintergrund:#f6f5f2;
+  --linie:#e2dfd8;
+  --text-gepraemt:#8d8a82;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Inter','Segoe UI',Arial,sans-serif;background:var(--hintergrund);color:var(--schwarz);}
+
+header{background:var(--schwarz);}
+.kopf-innen{max-width:960px;margin:0 auto;padding:22px 20px;display:flex;align-items:center;gap:16px;}
+.logo{width:52px;height:52px;background:var(--gelb);color:var(--schwarz);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;letter-spacing:.03em;flex:0 0 auto;}
+.kopf-titel{margin:0;font-size:26px;font-weight:700;color:#fff;}
+.kopf-untertitel{margin:2px 0 0;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);letter-spacing:.12em;text-transform:uppercase;}
+.gelb-band{height:4px;background:var(--gelb);}
+
+main{max-width:440px;margin:40px auto;padding:0 20px 50px;}
+
+.tabs{display:flex;border-bottom:2px solid var(--linie);margin-bottom:24px;}
+.tab-btn{flex:1;padding:12px;text-align:center;font-size:15px;font-weight:700;background:none;border:none;cursor:pointer;color:var(--text-gepraemt);}
+.tab-btn.aktiv{color:var(--schwarz);border-bottom:3px solid var(--gelb);margin-bottom:-2px;}
+
+.form-karte{background:#fff;border:1px solid var(--linie);padding:28px 24px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.form-gruppe{margin-bottom:16px;}
+.form-label{display:block;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;color:var(--schwarz);}
+.name-eingabe{font-family:inherit;font-size:16px;padding:12px 15px;border:1px solid #c9c6bf;border-radius:4px;background:#fff;width:100%;display:block;}
+.name-eingabe:focus{outline:none;border-color:var(--schwarz);}
+
+.btn-submit{font-family:inherit;font-size:16px;font-weight:700;letter-spacing:.03em;padding:14px 36px;background:var(--schwarz);color:#fff;border:none;cursor:pointer;width:100%;margin-top:10px;}
+.btn-submit:hover{background:#000;}
+
+.hinweis-box{padding:12px 16px;font-size:14px;font-weight:500;margin-bottom:20px;border-left:4px solid;display:none;}
+.hinweis-box.fehler{background:#fde8e8;border-color:#e02424;color:#9b1c1c;}
+.hinweis-box.erfolg{background:#edf7ed;border-color:#319795;color:#1e4620;}
+
+footer{background:var(--schwarz);position:fixed;bottom:0;left:0;right:0;}
+.fuss-innen{max-width:960px;margin:0 auto;padding:16px 20px;text-align:center;color:rgba(255,255,255,.7);font-size:14px;}
+.fuss-innen a{color:rgba(255,255,255,.85);margin-left:14px;}
+.dsgvo-hinweis{font-size:12px;color:var(--text-gepraemt);margin:14px 0 0;}
+.dsgvo-hinweis a{color:var(--schwarz);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kopf-innen">
+    <div class="logo">SV</div>
+    <div>
+      <h1 class="kopf-titel">SV Niederroth</h1>
+      <p class="kopf-untertitel">Platzreservierung Login</p>
+    </div>
+  </div>
+  <div class="gelb-band"></div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button id="tab-login-btn" class="tab-btn aktiv" onclick="tabWechseln('login')">Anmelden</button>
+    <button id="tab-register-btn" class="tab-btn" onclick="tabWechseln('register')">Account erstellen</button>
+    <button id="tab-reset-btn" class="tab-btn" onclick="tabWechseln('reset')">Passwort vergessen</button>
+  </div>
+
+  <div id="hinweis" class="hinweis-box"></div>
+
+  <div class="form-karte">
+    <!-- LOGIN FORMULAR -->
+    <form id="login-form" onsubmit="loginHandle(event)">
+      <div class="form-gruppe">
+        <label class="form-label">Vorname</label>
+        <input id="login-vorname" class="name-eingabe" type="text" required placeholder="Vorname">
+      </div>
+      <div class="form-gruppe">
+        <label class="form-label">Nachname</label>
+        <input id="login-nachname" class="name-eingabe" type="text" required placeholder="Nachname">
+      </div>
+      <div class="form-gruppe">
+        <label class="form-label">Passwort</label>
+        <input id="login-passwort" class="name-eingabe" type="password" required placeholder="Dein Passwort">
+      </div>
+      <button type="submit" class="btn-submit">Anmelden</button>
+    </form>
+
+    <!-- REGISTRIERUNGS FORMULAR -->
+    <form id="register-form" style="display:none;" onsubmit="registerHandle(event)">
+      <div class="form-gruppe">
+        <label class="form-label">Vereinscode</label>
+        <input id="reg-code" class="name-eingabe" type="text" required maxlength="60" autocomplete="off" placeholder="Aushang im Clubhaus">
+      </div>
+      <div class="form-gruppe">
+        <label class="form-label">Vorname</label>
+        <input id="reg-vorname" class="name-eingabe" type="text" required maxlength="30" placeholder="z. B. Max">
+      </div>
+      <div class="form-gruppe">
+        <label class="form-label">Nachname</label>
+        <input id="reg-nachname" class="name-eingabe" type="text" required maxlength="30" placeholder="z. B. Mustermann">
+      </div>
+      <div class="form-gruppe">
+        <label class="form-label">E-Mail-Adresse</label>
+        <input id="reg-email" class="name-eingabe" type="email" required placeholder="deine@email.de">
+      </div>
+      <div class="form-gruppe">
+        <label class="form-label">Passwort</label>
+        <input id="reg-passwort" class="name-eingabe" type="password" required minlength="8" maxlength="72" placeholder="Mind. 8 Zeichen" autocomplete="new-password">
+      </div>
+      <div class="form-gruppe">
+        <label class="form-label">Passwort wiederholen</label>
+        <input id="reg-passwort-wdh" class="name-eingabe" type="password" required maxlength="72" placeholder="Passwort wiederholen" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn-submit">Account erstellen</button>
+      <p class="dsgvo-hinweis">Mit der Registrierung werden dein Name, deine E-Mail-Adresse und deine Buchungen gespeichert. Details in der <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
+    </form>
+
+    <!-- PASSWORT-ZURÜCKSETZEN FORMULAR -->
+    <form id="reset-form" style="display:none;" onsubmit="resetAnfordernHandle(event)">
+      <p style="font-size:14px;color:var(--text-gepraemt);margin-top:0;">
+        Gib deine E-Mail-Adresse ein. Du erhältst einen Link zum Zurücksetzen deines Passworts.
+      </p>
+      <div class="form-gruppe">
+        <label class="form-label">E-Mail-Adresse</label>
+        <input id="reset-email" class="name-eingabe" type="email" required placeholder="deine@email.de">
+      </div>
+      <button type="submit" class="btn-submit">Reset-Link senden</button>
+    </form>
+  </div>
+</main>
+
+<footer>
+  <div class="gelb-band"></div>
+  <div class="fuss-innen">SV Niederroth <a href="datenschutz.html">Datenschutz</a><a href="impressum.html">Impressum</a></div>
+</footer>
+
+<script>
+fetch('session_info.php').then(r => r.json()).then(info => {
+  if (info.eingeloggt) window.location.href = 'index.html';
+}).catch(() => {});
+
+function hinweisZeigen(text, typ) {
+  const box = document.getElementById('hinweis');
+  box.textContent = text;
+  box.className = 'hinweis-box ' + typ;
+  box.style.display = 'block';
+}
+
+function tabWechseln(modus) {
+  document.getElementById('hinweis').style.display = 'none';
+  document.getElementById('login-form').style.display = modus === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = modus === 'register' ? 'block' : 'none';
+  document.getElementById('reset-form').style.display = modus === 'reset' ? 'block' : 'none';
+  document.getElementById('tab-login-btn').classList.toggle('aktiv', modus === 'login');
+  document.getElementById('tab-register-btn').classList.toggle('aktiv', modus === 'register');
+  document.getElementById('tab-reset-btn').classList.toggle('aktiv', modus === 'reset');
+}
+
+async function resetAnfordernHandle(e) {
+  e.preventDefault();
+  const email = document.getElementById('reset-email').value.trim();
+
+  try {
+    const res = await fetch('passwort_anfordern.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    // Aus Sicherheitsgründen immer dieselbe Erfolgsmeldung anzeigen
+    hinweisZeigen('Wenn diese E-Mail registriert ist, wurde ein Link verschickt.', 'erfolg');
+    document.getElementById('reset-form').reset();
+  } catch (err) {
+    hinweisZeigen('Serverfehler beim Senden.', 'fehler');
+  }
+}
+
+async function registerHandle(e) {
+  e.preventDefault();
+  const vorname = document.getElementById('reg-vorname').value.trim();
+  const nachname = document.getElementById('reg-nachname').value.trim();
+  const vereinscode = document.getElementById('reg-code').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pw = document.getElementById('reg-passwort').value;
+  const pwWdh = document.getElementById('reg-passwort-wdh').value;
+
+  if (!vereinscode || !vorname || !nachname || !email || !pw) {
+    hinweisZeigen('Bitte alle Felder ausfüllen.', 'fehler');
+    return;
+  }
+  if (/[<>]/.test(vorname + nachname)) {
+    hinweisZeigen('Der Name darf kein < oder > enthalten.', 'fehler');
+    return;
+  }
+  if (vorname.length + 1 + nachname.length > 40) {
+    hinweisZeigen('Vor- und Nachname dürfen zusammen höchstens 40 Zeichen lang sein.', 'fehler');
+    return;
+  }
+  if (pw.length < 8) {
+    hinweisZeigen('Das Passwort muss mindestens 8 Zeichen lang sein.', 'fehler');
+    return;
+  }
+  if (pw !== pwWdh) {
+    hinweisZeigen('Die Passwörter stimmen nicht überein.', 'fehler');
+    return;
+  }
+
+  try {
+    const res = await fetch('registrieren.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vereinscode, vorname, nachname, email, passwort: pw })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      hinweisZeigen('Account erfolgreich erstellt! Du kannst dich jetzt anmelden.', 'erfolg');
+      document.getElementById('register-form').reset();
+      setTimeout(() => tabWechseln('login'), 1200);
+    } else {
+      hinweisZeigen(data.msg || 'Registrierung fehlgeschlagen.', 'fehler');
+    }
+  } catch (err) {
+    hinweisZeigen('Serverfehler bei der Registrierung.', 'fehler');
+  }
+}
+
+async function loginHandle(e) {
+  e.preventDefault();
+  const vorname = document.getElementById('login-vorname').value.trim();
+  const nachname = document.getElementById('login-nachname').value.trim();
+  const pw = document.getElementById('login-passwort').value;
+
+  try {
+    const res = await fetch('login_verarbeiten.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vorname, nachname, passwort: pw })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.href = 'index.html';
+    } else {
+      hinweisZeigen(data.msg || 'Anmeldung fehlgeschlagen.', 'fehler');
+    }
+  } catch (err) {
+    hinweisZeigen('Serverfehler bei der Anmeldung.', 'fehler');
+  }
+}
+</script>
+
+</body>
+</html>

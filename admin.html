@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SV Niederroth – Admin Dashboard</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{
+  --schwarz:#1c1c1e;
+  --gelb:#f2c114;
+  --gelb-licht:#fdf3d0;
+  --hintergrund:#f6f5f2;
+  --linie:#e2dfd8;
+  --text-gepraemt:#8d8a82;
+  --rot:#d9383a;
+  --gruen:#2e7d32;
+}
+*{box-sizing:border-box;}
+
+html{ height: 100%; }
+
+body{
+  margin:0;
+  font-family:'Inter','Segoe UI',Arial,Helvetica,sans-serif;
+  background:var(--hintergrund);
+  color:var(--schwarz);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header{background:var(--schwarz); flex-shrink:0;}
+.kopf-innen{max-width:1100px;margin:0 auto;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.kopf-links{display:flex;align-items:center;gap:16px;}
+.logo{width:52px;height:52px;background:var(--gelb);color:var(--schwarz);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;letter-spacing:.03em;flex:0 0 auto;}
+.kopf-titel{margin:0;font-size:24px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px;}
+.admin-badge{background:var(--gelb);color:var(--schwarz);font-size:11px;font-weight:800;padding:3px 8px;border-radius:3px;letter-spacing:.08em;text-transform:uppercase;}
+.kopf-untertitel{margin:2px 0 0;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);letter-spacing:.12em;text-transform:uppercase;}
+.gelb-band{height:4px;background:var(--gelb);}
+
+main{
+  max-width:1100px;
+  width: 100%;
+  margin:0 auto;
+  padding:20px 20px 60px;
+  flex: 1 0 auto;
+}
+
+.haupt-nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--linie);
+  padding-bottom: 12px;
+}
+.nav-tab {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border: 1px solid var(--linie);
+  background: #fff;
+  color: var(--schwarz);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all .2s;
+}
+.nav-tab:hover { background: #efede8; }
+.nav-tab.aktiv { background: var(--schwarz); color: #fff; border-color: var(--schwarz); }
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:28px;}
+.stat-karte{background:#fff;border:1px solid var(--linie);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.stat-titel{font-size:12px;font-weight:700;color:var(--text-gepraemt);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.stat-wert{font-size:28px;font-weight:800;color:var(--schwarz);}
+
+.filter-box{background:#fff;border:1px solid var(--linie);padding:18px 20px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;flex-direction:column;gap:14px;}
+.filter-oberzeile{display:flex;gap:12px;flex-wrap:wrap;}
+.such-eingabe{font-family:inherit;font-size:15px;padding:11px 14px;border:1px solid #c9c6bf;border-radius:4px;background:#fff;flex:1;min-width:240px;}
+.such-eingabe:focus{outline:none;border-color:var(--schwarz);}
+.filter-unterzeile{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.filter-gruppen{display:flex;gap:6px;flex-wrap:wrap;}
+.filter-btn{font-family:inherit;font-size:13px;font-weight:600;padding:7px 14px;border:1px solid var(--linie);background:#fff;cursor:pointer;color:var(--schwarz);}
+.filter-btn.aktiv{background:var(--schwarz);color:#fff;border-color:var(--schwarz);}
+.platz-select{font-family:inherit;font-size:13px;font-weight:600;padding:7px 12px;border:1px solid var(--linie);background:#fff;cursor:pointer;border-radius:4px;}
+
+.tabelle-wrapper{background:#fff;border:1px solid var(--linie);box-shadow:0 1px 3px rgba(0,0,0,.04);overflow-x:auto;}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:14px;}
+th{background:#efede8;color:#5a5751;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:14px 16px;border-bottom:1px solid var(--linie);}
+td{padding:14px 16px;border-bottom:1px solid var(--linie);color:var(--schwarz);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#faf8f5;}
+
+.platz-badge{display:inline-block;background:var(--schwarz);color:#fff;padding:4px 10px;font-size:12px;font-weight:700;border-radius:3px;}
+.status-badge{display:inline-block;padding:4px 8px;font-size:11px;font-weight:700;border-radius:3px;text-transform:uppercase;letter-spacing:.05em;}
+.status-badge.heute{background:var(--gelb);color:var(--schwarz);}
+.status-badge.zukunft{background:#e8f5e9;color:var(--gruen);}
+.status-badge.vergangen{background:#f0f0f0;color:#888;}
+.status-badge.admin{background:var(--gelb);color:var(--schwarz);}
+.status-badge.mitglied{background:#e8f5e9;color:var(--gruen);}
+.status-badge.gesperrt{background:#ffebee;color:var(--rot);}
+
+.btn-loeschen{background:#fff;border:1px solid #d1cfc7;color:var(--rot);padding:6px 12px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:3px;}
+.btn-loeschen:hover{background:var(--rot);color:#fff;border-color:var(--rot);}
+.btn-speichern{background:var(--schwarz);border:1px solid var(--schwarz);color:#fff;padding:6px 12px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:3px;}
+.btn-speichern:hover{background:var(--gelb);color:var(--schwarz);border-color:var(--gelb);}
+
+.keine-daten{padding:40px;text-align:center;color:var(--text-gepraemt);font-size:15px;}
+
+footer{background:var(--schwarz);margin-top:auto;flex-shrink:0;}
+.fuss-innen{max-width:1100px;margin:0 auto;padding:16px 20px;text-align:center;color:rgba(255,255,255,.7);font-size:14px;}
+.fuss-innen a{color:rgba(255,255,255,.85);margin-left:14px;}
+
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--schwarz);color:#fff;padding:12px 22px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:99;display:none;border-left:4px solid var(--gelb);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kopf-innen">
+    <div class="kopf-links">
+      <div class="logo">SV</div>
+      <div>
+        <h1 class="kopf-titel">SV Niederroth <span class="admin-badge">Admin</span></h1>
+        <p class="kopf-untertitel">Reservierungs-Verwaltung</p>
+      </div>
+    </div>
+  </div>
+  <div class="gelb-band"></div>
+</header>
+
+<main>
+  <div class="haupt-nav">
+    <button class="nav-tab aktiv" data-ansicht="reservierungen">Reservierungen</button>
+    <button class="nav-tab" data-ansicht="benutzer">Registrierte Benutzer</button>
+  </div>
+
+  <!-- Sektion 1: Reservierungen -->
+  <div id="sektion-reservierungen">
+    <div class="stats-grid">
+      <div class="stat-karte">
+        <div class="stat-titel">Gesamt Slots</div>
+        <div id="stat-gesamt" class="stat-wert">0</div>
+      </div>
+      <div class="stat-karte">
+        <div class="stat-titel">Heute Gebucht</div>
+        <div id="stat-heute" class="stat-wert">0</div>
+      </div>
+      <div class="stat-karte">
+        <div class="stat-titel">Zukünftige Buchungen</div>
+        <div id="stat-zukunft" class="stat-wert">0</div>
+      </div>
+      <div class="stat-karte">
+        <div class="stat-titel">Aktive Bucher</div>
+        <div id="stat-spieler" class="stat-wert">0</div>
+      </div>
+    </div>
+
+    <div class="filter-box">
+      <div class="filter-oberzeile">
+        <input id="such-input" class="such-eingabe" type="text" placeholder="Nach Name, Datum (z. B. 2026-09-25) oder Platz suchen..." autocomplete="off">
+        <select id="platz-filter" class="platz-select">
+          <option value="alle">Alle Plätze</option>
+          <option value="1">Platz 1</option>
+          <option value="2">Platz 2</option>
+          <option value="3">Platz 3</option>
+        </select>
+      </div>
+      <div class="filter-unterzeile">
+        <div class="filter-gruppen">
+          <button class="filter-btn aktiv" data-filter="alle">Alle</button>
+          <button class="filter-btn" data-filter="heute">Heute</button>
+          <button class="filter-btn" data-filter="zukunft">Zukünftige</button>
+          <button class="filter-btn" data-filter="vergangen">Vergangene</button>
+        </div>
+        <div id="treffer-zaehler" style="font-size:13px; font-weight:600; color:var(--text-gepraemt);">0 Reservierung(en)</div>
+      </div>
+    </div>
+
+    <div class="tabelle-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Uhrzeit</th>
+            <th>Platz</th>
+            <th>Name / Spieler</th>
+            <th>Status</th>
+            <th style="text-align:right;">Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="tabelle-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sektion 2: Registrierte Benutzer -->
+  <div id="sektion-benutzer" style="display:none;">
+    <div class="filter-box">
+      <div class="filter-oberzeile">
+        <input id="benutzer-such-input" class="such-eingabe" type="text" placeholder="Nach Name suchen..." autocomplete="off">
+        <select id="rolle-filter" class="platz-select">
+          <option value="alle">Alle Rollen</option>
+          <option value="admin">Administrator</option>
+          <option value="mitglied">Mitglied</option>
+          <option value="gesperrt">Gesperrt</option>
+        </select>
+      </div>
+      <div class="filter-unterzeile">
+        <div id="benutzer-treffer-zaehler" style="font-size:13px; font-weight:600; color:var(--text-gepraemt);">0 Personen registriert</div>
+      </div>
+    </div>
+
+    <div class="tabelle-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Name (Vor- & Nachname)</th>
+            <th>Status / Rolle</th>
+            <th>Berechtigung anpassen</th>
+            <th style="text-align:right;">Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="benutzer-tabelle-body"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="gelb-band"></div>
+  <div class="fuss-innen">SV Niederroth – Administrator Bereich <a href="datenschutz.html">Datenschutz</a></div>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+document.body.style.visibility = 'hidden';
+(async function zugriffPruefen(){
+  let info;
+  try {
+    const res = await fetch('session_info.php');
+    info = await res.json();
+  } catch(e) {
+    info = { eingeloggt: false };
+  }
+  if (!info.eingeloggt) {
+    window.location.href = 'login.html';
+    return;
+  }
+  if (info.rolle !== 'admin') {
+    window.location.href = 'index.html';
+    return;
+  }
+  document.body.style.visibility = 'visible';
+})();
+
+let alleBuchungen = [];
+let alleBenutzer = [];
+let aktuellerFilter = 'alle';
+let ausgewaehlterPlatz = 'alle';
+let suchbegriff = '';
+
+let benutzerSuchbegriff = '';
+let benutzerRolleFilter = 'alle';
+
+const TAG_KURZ = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+
+function heuteKey(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function datumFormatieren(key){
+  if(!key) return '';
+  const [j,m,t] = key.split('-');
+  const d = new Date(key + 'T00:00:00');
+  return TAG_KURZ[d.getDay()] + ', ' + t + '.' + m + '.' + j;
+}
+
+// Punkt 2: HTML-Escaping für alles, was per innerHTML eingesetzt wird
+function esc(s){return String(s).replace(/[&<>"']/g,
+  c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function toast(text){
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+/* FORMATIERUNG DER BÜNDEL */
+function formatierePlatzeText(courts) {
+  courts.sort((a,b) => a - b);
+  if (courts.length === 0) return '';
+  if (courts.length === 1) return 'Platz ' + courts[0];
+  
+  let fortlaufend = true;
+  for (let i = 0; i < courts.length - 1; i++) {
+    if (courts[i+1] !== courts[i] + 1) {
+      fortlaufend = false;
+      break;
+    }
+  }
+  if (fortlaufend) {
+    return 'Platz ' + courts[0] + '–' + courts[courts.length - 1];
+  } else {
+    return 'Platz ' + courts.join(' & ');
+  }
+}
+
+function formatiereStundenBereich(stunden) {
+  stunden.sort((a,b) => a - b);
+  const start = stunden[0];
+  const ende = stunden[stunden.length - 1] + 1;
+  return String(start).padStart(2, '0') + ':00 – ' + String(ende).padStart(2, '0') + ':00 Uhr';
+}
+
+/* GRUPPIERUNGS-LOGIK */
+function erstelleBloecke(liste) {
+  if (!liste || liste.length === 0) return [];
+
+  const nachSchluessel = {};
+  liste.forEach(b => {
+    const schluessel = b.day_date + '___' + b.name;
+    if (!nachSchluessel[schluessel]) nachSchluessel[schluessel] = [];
+    nachSchluessel[schluessel].push(b);
+  });
+
+  const bloecke = [];
+
+  Object.keys(nachSchluessel).forEach(schluessel => {
+    const eintraege = nachSchluessel[schluessel];
+    eintraege.sort((a,b) => a.start_hour - b.start_hour || a.court - b.court);
+
+    let aktuellerCluster = null;
+
+    eintraege.forEach(item => {
+      if (!aktuellerCluster) {
+        aktuellerCluster = {
+          day_date: item.day_date,
+          name: item.name,
+          ids: [item.id],
+          courts: [item.court],
+          stunden: [item.start_hour]
+        };
+      } else {
+        const maxStunde = Math.max(...aktuellerCluster.stunden);
+        if (item.start_hour <= maxStunde + 1) {
+          aktuellerCluster.ids.push(item.id);
+          if (!aktuellerCluster.courts.includes(item.court)) aktuellerCluster.courts.push(item.court);
+          if (!aktuellerCluster.stunden.includes(item.start_hour)) aktuellerCluster.stunden.push(item.start_hour);
+        } else {
+          bloecke.push(aktuellerCluster);
+          aktuellerCluster = {
+            day_date: item.day_date,
+            name: item.name,
+            ids: [item.id],
+            courts: [item.court],
+            stunden: [item.start_hour]
+          };
+        }
+      }
+    });
+
+    if (aktuellerCluster) {
+      bloecke.push(aktuellerCluster);
+    }
+  });
+
+  return bloecke;
+}
+
+/* NAV TABS */
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('aktiv'));
+    tab.classList.add('aktiv');
+    const target = tab.dataset.ansicht;
+    if (target === 'reservierungen') {
+      document.getElementById('sektion-reservierungen').style.display = 'block';
+      document.getElementById('sektion-benutzer').style.display = 'none';
+    } else {
+      document.getElementById('sektion-reservierungen').style.display = 'none';
+      document.getElementById('sektion-benutzer').style.display = 'block';
+      benutzerLaden();
+    }
+  });
+});
+
+/* RESERVIERUNGEN LADEN */
+async function datenLaden(){
+  try {
+    const res = await fetch('admin_daten.php?t=' + Date.now());
+    alleBuchungen = await res.json();
+    statsBerechnen();
+    rendern();
+  } catch(e){}
+}
+
+function statsBerechnen(){
+  const heute = heuteKey();
+  document.getElementById('stat-gesamt').textContent = alleBuchungen.length;
+  document.getElementById('stat-heute').textContent = alleBuchungen.filter(b => b.day_date === heute).length;
+  document.getElementById('stat-zukunft').textContent = alleBuchungen.filter(b => b.day_date > heute).length;
+
+  const spielerSet = new Set();
+  alleBuchungen.forEach(b => {
+    b.name.split('&').forEach(n => spielerSet.add(n.trim().toLowerCase()));
+  });
+  document.getElementById('stat-spieler').textContent = spielerSet.size;
+}
+
+function rendern(){
+  const tbody = document.getElementById('tabelle-body');
+  tbody.innerHTML = '';
+  const heute = heuteKey();
+
+  const gefiltert = alleBuchungen.filter(b => {
+    const q = suchbegriff.toLowerCase();
+    const matchSearch = b.name.toLowerCase().includes(q) || b.day_date.includes(q) || ('platz ' + b.court).includes(q);
+    if (!matchSearch) return false;
+
+    if (ausgewaehlterPlatz !== 'alle' && String(b.court) !== ausgewaehlterPlatz) return false;
+
+    if (aktuellerFilter === 'heute') return b.day_date === heute;
+    if (aktuellerFilter === 'zukunft') return b.day_date > heute;
+    if (aktuellerFilter === 'vergangen') return b.day_date < heute;
+
+    return true;
+  });
+
+  // HIER WERDEN BUCHUNGEN GRUPPIERT (Platz 1 & 2 / Mehrere Stunden zusammengefasst)
+  const bloecke = erstelleBloecke(gefiltert);
+
+  document.getElementById('treffer-zaehler').textContent = bloecke.length + ' Reservierung(en)';
+
+  if (bloecke.length === 0){
+    tbody.innerHTML = '<tr><td colspan="6" class="keine-daten">Keine Reservierungen gefunden.</td></tr>';
+    return;
+  }
+
+  bloecke.forEach(block => {
+    const tr = document.createElement('tr');
+
+    let statusBadge = '<span class="status-badge vergangen">Vergangen</span>';
+    if (block.day_date === heute) statusBadge = '<span class="status-badge heute">Heute</span>';
+    if (block.day_date > heute) statusBadge = '<span class="status-badge zukunft">Zukünftig</span>';
+
+    const platzeText = formatierePlatzeText(block.courts);
+    const zeitenText = formatiereStundenBereich(block.stunden);
+
+    tr.innerHTML = `
+      <td><strong>${datumFormatieren(block.day_date)}</strong></td>
+      <td>${zeitenText}</td>
+      <td><span class="platz-badge">${platzeText}</span></td>
+      <td><strong>${esc(block.name)}</strong></td>
+      <td>${statusBadge}</td>
+      <td style="text-align:right;">
+        <button class="btn-loeschen">Stornieren</button>
+      </td>
+    `;
+
+    tr.querySelector('.btn-loeschen').onclick = async () => {
+      if (!confirm(`Reservierung von "${block.name}" am ${datumFormatieren(block.day_date)} wirklich stornieren?`)) return;
+      for (const id of block.ids) {
+        await fetch('platz_loeschen.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id, day_date: block.day_date })
+        });
+      }
+      toast('Reservierung storniert.');
+      datenLaden();
+    };
+
+    tbody.appendChild(tr);
+  });
+}
+
+/* ROBUSTE BENUTZER-LADE-LOGIK */
+async function benutzerLaden() {
+  let geladen = false;
+  try {
+    const res = await fetch('benutzer_daten.php?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        alleBenutzer = data;
+        geladen = true;
+      }
+    }
+  } catch(e){}
+
+  if (!geladen) {
+    const benutzerMap = new Map();
+
+    // 1. Aus localStorage-Accounts auslesen
+    const localAccsRaw = localStorage.getItem('sv_niederroth_accounts') || localStorage.getItem('accounts');
+    if (localAccsRaw) {
+      try {
+        const accs = JSON.parse(localAccsRaw);
+        if (Array.isArray(accs)) {
+          accs.forEach(a => {
+            const name = a.fullname || (a.vorname && a.nachname ? a.vorname + ' ' + a.nachname : a.name);
+            if (name) {
+              benutzerMap.set(name.toLowerCase(), {
+                id: name,
+                fullname: name,
+                rolle: a.sonderrechte || a.rolle === 'admin' ? 'admin' : 'mitglied'
+              });
+            }
+          });
+        }
+      } catch(e){}
+    }
+
+    // 2. Aktuell eingeloggten Benutzer hinzufügen (falls nicht in Liste)
+    const activeUser = localStorage.getItem('sv_niederroth_user') || localStorage.getItem('eingeloggt_user') || localStorage.getItem('aktiverBenutzer');
+    if (activeUser) {
+      try {
+        const u = JSON.parse(activeUser);
+        const name = typeof u === 'string' ? u : (u.fullname || u.name || (u.vorname + ' ' + u.nachname));
+        if (name && !benutzerMap.has(name.toLowerCase())) {
+          benutzerMap.set(name.toLowerCase(), { id: name, fullname: name, rolle: 'admin' });
+        }
+      } catch(e) {
+        if (typeof activeUser === 'string' && activeUser.length > 1 && !benutzerMap.has(activeUser.toLowerCase())) {
+          benutzerMap.set(activeUser.toLowerCase(), { id: activeUser, fullname: activeUser, rolle: 'admin' });
+        }
+      }
+    }
+
+    alleBenutzer = Array.from(benutzerMap.values());
+  }
+
+  benutzerRendern();
+}
+
+function benutzerRendern() {
+  const tbody = document.getElementById('benutzer-tabelle-body');
+  tbody.innerHTML = '';
+
+  const gefiltert = alleBenutzer.filter(u => {
+    const q = benutzerSuchbegriff.toLowerCase();
+    const matchSearch = (u.fullname || '').toLowerCase().includes(q);
+    if (!matchSearch) return false;
+
+    if (benutzerRolleFilter !== 'alle' && u.rolle !== benutzerRolleFilter) return false;
+    return true;
+  });
+
+  document.getElementById('benutzer-treffer-zaehler').textContent = gefiltert.length + ' Person(en) registriert';
+
+  if (gefiltert.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="keine-daten">Keine registrierten Benutzer vorhanden.</td></tr>';
+    return;
+  }
+
+  gefiltert.forEach(user => {
+    const tr = document.createElement('tr');
+
+    let badge = '<span class="status-badge mitglied">Mitglied</span>';
+    if (user.rolle === 'admin') badge = '<span class="status-badge admin">Admin</span>';
+    if (user.rolle === 'gesperrt') badge = '<span class="status-badge gesperrt">Gesperrt</span>';
+
+    tr.innerHTML = `
+      <td><strong>${esc(user.fullname)}</strong></td>
+      <td>${badge}</td>
+      <td>
+        <select class="platz-select benutzer-rolle-select">
+          <option value="mitglied" ${user.rolle === 'mitglied' ? 'selected' : ''}>Mitglied (Standard)</option>
+          <option value="admin" ${user.rolle === 'admin' ? 'selected' : ''}>Administrator</option>
+          <option value="gesperrt" ${user.rolle === 'gesperrt' ? 'selected' : ''}>Gesperrt</option>
+        </select>
+      </td>
+      <td style="text-align:right;">
+        <button class="btn-speichern">Speichern</button>
+      </td>
+    `;
+
+    const selectRolle = tr.querySelector('.benutzer-rolle-select');
+    tr.querySelector('.btn-speichern').onclick = async () => {
+      const neueRolle = selectRolle.value;
+      try {
+        const res = await fetch('benutzer_update.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: user.id, fullname: user.fullname, rolle: neueRolle })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          toast(data.msg || 'Speichern fehlgeschlagen.');
+          benutzerLaden();
+          return;
+        }
+      } catch(e){
+        toast('Serverfehler beim Speichern.');
+        return;
+      }
+
+      toast(`Berechtigung für "${user.fullname}" gespeichert.`);
+      benutzerLaden();
+    };
+
+    tbody.appendChild(tr);
+  });
+}
+
+// Event-Listener
+document.getElementById('such-input').addEventListener('input', (e) => {
+  suchbegriff = e.target.value.trim();
+  rendern();
+});
+document.getElementById('platz-filter').addEventListener('change', (e) => {
+  ausgewaehlterPlatz = e.target.value;
+  rendern();
+});
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('aktiv'));
+    btn.classList.add('aktiv');
+    aktuellerFilter = btn.dataset.filter;
+    rendern();
+  });
+});
+document.getElementById('benutzer-such-input').addEventListener('input', (e) => {
+  benutzerSuchbegriff = e.target.value.trim();
+  benutzerRendern();
+});
+document.getElementById('rolle-filter').addEventListener('change', (e) => {
+  benutzerRolleFilter = e.target.value;
+  benutzerRendern();
+});
+
+// Start
+datenLaden();
+setInterval(datenLaden, 5000);
+</script>
+</body>
+</html>

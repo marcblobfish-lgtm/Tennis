@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SV Niederroth – Platzreservierung</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="fonts.css">
+<style>
+body{visibility:hidden;} /* bis die Server-Session geprüft ist, um ein kurzes Aufblitzen zu vermeiden */
+:root{--schwarz:#1c1c1e;--gelb:#f2c114;--gelb-licht:#fdf3d0;--hintergrund:#f6f5f2;--linie:#e2dfd8;--text-gepraemt:#8d8a82;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Inter','Segoe UI',Arial,sans-serif;background:var(--hintergrund);color:var(--schwarz);}
+header{background:var(--schwarz);}
+.kopf-innen{max-width:960px;margin:0 auto;padding:22px 20px;display:flex;align-items:center;gap:16px;}
+.logo{width:52px;height:52px;background:var(--gelb);color:var(--schwarz);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;letter-spacing:.03em;flex:0 0 auto;}
+.kopf-titel{margin:0;font-size:26px;font-weight:700;color:#fff;}
+.kopf-untertitel{margin:2px 0 0;font-size:13px;font-weight:500;color:rgba(255,255,255,.6);letter-spacing:.12em;text-transform:uppercase;}
+.user-info{color:#fff;text-align:right;font-size:13px;margin-left:auto;}
+.user-info strong{color:var(--gelb);}
+.user-info a{color:rgba(255,255,255,.7);text-decoration:none;margin-left:8px;font-weight:600;cursor:pointer;}
+.gelb-band{height:4px;background:var(--gelb);}
+main{max-width:960px;margin:0 auto;padding:10px 20px 50px;}
+.abschnitt-titel{display:flex;align-items:center;gap:12px;margin:40px 0 16px;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-gepraemt);}
+.abschnitt-titel .nr{background:var(--schwarz);color:var(--gelb);font-size:12px;font-weight:800;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.tage{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
+.tag-btn{background:#fff;border:1px solid var(--linie);padding:13px 8px 12px;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--schwarz);box-shadow:0 1px 2px rgba(0,0,0,.05);}
+.tag-btn.heute{border:2px solid var(--gelb);}
+.tag-btn.aktiv{background:var(--schwarz);border-color:var(--schwarz);color:#fff;}
+.tag-btn.aktiv .tag-datum{color:rgba(255,255,255,.65);}
+.heute-punkt{width:7px;height:7px;border-radius:50%;background:var(--gelb);margin-bottom:2px;}
+.datum{font-size:16px;font-weight:600;margin:0 0 10px;}
+.legende-text{font-size:13px;color:var(--text-gepraemt);margin:0 0 14px;}
+.plan-grid{display:grid;grid-template-columns:120px repeat(3,1fr);gap:1px;background:var(--linie);border:1px solid var(--linie);}
+.zelle{background:#fff;min-height:58px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:inherit;padding:10px 12px;font-size:14px;font-weight:500;color:var(--schwarz);border:none;}
+.zelle.zeit{justify-content:flex-start;font-size:15px;font-weight:600;}
+.zelle.kopf{background:#efede8;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6d6a63;}
+button.zelle.frei{color:#b8b5ac;cursor:pointer;}
+button.zelle.frei:hover{background:var(--gelb-licht);color:var(--schwarz);}
+.zelle.gebucht{background:var(--schwarz);color:#fff;font-weight:600;word-break:break-word;cursor:pointer;}
+.zelle.ausgewaehlt{background:var(--gelb);color:var(--schwarz);font-weight:700;cursor:pointer;}
+.zelle.vorbei{background:#f1efe9;color:#b8b5ac;}
+.auswahl-zeige{background:#fff;border:1px solid var(--linie);border-left:4px solid var(--gelb);padding:14px 18px;font-size:15px;font-weight:600;margin-bottom:18px;}
+.modus-auswahl{display:flex;gap:12px;margin-bottom:16px;}
+.modus-btn{background:#fff;border:1px solid var(--linie);padding:10px 16px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:var(--schwarz);}
+.modus-btn.aktiv{background:var(--schwarz);color:#fff;border-color:var(--schwarz);}
+.form-label{font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-gepraemt); display:block; margin-bottom:4px;}
+.name-eingabe{font-family:inherit;font-size:16px;padding:12px 15px;border:1px solid #c9c6bf;border-radius:4px;background:#fff;width:100%;max-width:440px;margin-bottom:12px;display:block;}
+.name-eingabe[readonly]{background:#e9e8e3;color:#555;cursor:not-allowed;}
+.btn-reservieren{font-family:inherit;font-size:16px;font-weight:700;padding:14px 36px;background:var(--schwarz);color:#fff;border:none;cursor:pointer;}
+.eigene-liste{display:flex;flex-direction:column;gap:8px;max-width:680px;}
+.eigene-eintrag{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;border:1px solid var(--linie);padding:12px 16px;font-size:15px;}
+.btn-loeschen{font-family:inherit;font-size:13px;font-weight:600;background:#fff;border:1px solid #c9c6bf;padding:8px 14px;cursor:pointer;border-radius:3px;transition:all 0.15s;}
+.btn-loeschen:hover{background:#d9383a;color:#fff;border-color:#d9383a;}
+footer{background:var(--schwarz);}
+.fuss-innen{max-width:960px;margin:0 auto;padding:16px 20px;text-align:center;color:rgba(255,255,255,.7);font-size:14px;}
+.fuss-innen a{color:rgba(255,255,255,.85);margin-left:14px;}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--schwarz);color:#fff;padding:12px 22px;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:99;display:none;border-left:4px solid var(--gelb);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kopf-innen">
+    <div class="logo">SV</div>
+    <div>
+      <h1 class="kopf-titel">SV Niederroth</h1>
+      <p class="kopf-untertitel">Reservierung Tennisplätze</p>
+    </div>
+    <div class="user-info">
+      Angemeldet als: <strong id="user-display-name"></strong>
+      <a onclick="abmelden()">[ Abmelden ]</a>
+    </div>
+  </div>
+  <div class="gelb-band"></div>
+</header>
+
+<main>
+  <h2 class="abschnitt-titel"><span class="nr">1</span>Wochentag wählen</h2>
+  <div id="tage" class="tage"></div>
+
+  <h2 class="abschnitt-titel"><span class="nr">2</span>Uhrzeit und Platz wählen</h2>
+  <p id="plan-datum" class="datum"></p>
+  <p class="legende-text">weiß = frei · schwarz = belegt · gelb = deine Auswahl</p>
+  <div id="plan"></div>
+
+  <h2 class="abschnitt-titel"><span class="nr">3</span>Reservierung bestätigen</h2>
+  <div id="auswahl-zeige" class="auswahl-zeige">Noch keine Auswahl – bitte oben freie Plätze/Zeiten antippen.</div>
+
+  <div id="modus-bereich" class="modus-auswahl" style="display:none;">
+    <button type="button" id="btn-modus-normal" class="modus-btn aktiv" onclick="modusWechseln('normal')">Spieler-Reservierung</button>
+    <button type="button" id="btn-modus-sonder" class="modus-btn" onclick="modusWechseln('sonder')">Sonderreservierung</button>
+  </div>
+
+  <div id="form-normal">
+    <label class="form-label">Spieler 1 (Dein Name)</label>
+    <input id="name-input" class="name-eingabe" type="text" readonly>
+    
+    <label class="form-label">Spieler 2 (Mitspieler - Vor- & Nachname)</label>
+    <input id="name2-input" class="name-eingabe" type="text" placeholder="Vor- und Nachname des Mitspielers" maxlength="36">
+  </div>
+
+  <div id="form-sonder" style="display:none;">
+    <label class="form-label">Bezeichnung / Anlass</label>
+    <input id="sonder-input" class="name-eingabe" type="text" placeholder="z. B. Herren, Training, Jugend" maxlength="50">
+  </div>
+
+  <div><button id="reservieren-btn" class="btn-reservieren">Platz reservieren</button></div>
+
+  <h2 id="eigene-abschnitt" class="abschnitt-titel"><span class="nr">4</span>Deine Reservierungen (Löschen)</h2>
+  <div id="eigene-liste" class="eigene-liste"></div>
+</main>
+
+<footer>
+  <div class="gelb-band"></div>
+  <div class="fuss-innen">SV Niederroth <a href="datenschutz.html">Datenschutz</a><a href="impressum.html">Impressum</a></div>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+let LOGGED_IN_USER = '';
+let hatSonderrechte = false;
+let aktuellerModus = 'normal';
+
+function modusWechseln(modus) {
+  aktuellerModus = modus;
+  if (modus === 'normal') {
+    document.getElementById('form-normal').style.display = 'block';
+    document.getElementById('form-sonder').style.display = 'none';
+    document.getElementById('btn-modus-normal').classList.add('aktiv');
+    document.getElementById('btn-modus-sonder').classList.remove('aktiv');
+  } else {
+    document.getElementById('form-normal').style.display = 'none';
+    document.getElementById('form-sonder').style.display = 'block';
+    document.getElementById('btn-modus-normal').classList.remove('aktiv');
+    document.getElementById('btn-modus-sonder').classList.add('aktiv');
+  }
+}
+
+const PLATZ_ANZAHL = 3;
+const STUNDEN = [9,10,11,12,13,14,15,16,17,18,19];
+const TAG_KURZ = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const TAG_VOLLLANG = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+
+let aktuellerTag = null;
+let buchungen = [];
+let ausgewaehlt = [];
+
+async function abmelden() {
+  try { await fetch('logout.php'); } catch(e){}
+  window.location.href = 'login.html';
+}
+
+function datumKey(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function heuteDatum(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+function schoneTagAnsicht(key){ const [j,m,t] = key.split('-'); return t + '.' + m + '.' + j; }
+function wochentagKey(key){ const d = new Date(key + 'T00:00:00'); return TAG_VOLLLANG[(d.getDay() + 6) % 7]; }
+
+// Punkt 2: HTML-Escaping für alles, was per innerHTML eingesetzt wird
+function esc(s){return String(s).replace(/[&<>"']/g,
+  c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+let toastTimer;
+function toast(text){
+  const t = document.getElementById('toast');
+  t.textContent = text; t.style.display = 'block';
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = 'none', 3500);
+}
+
+function tageRendern(){
+  const el = document.getElementById('tage');
+  el.innerHTML = '';
+  const heute = heuteDatum();
+  const heuteK = datumKey(heute);
+
+  for (let offset = -1; offset <= 5; offset++){
+    const d = new Date(heute); d.setDate(heute.getDate() + offset);
+    const key = datumKey(d);
+    const istHeute = key === heuteK;
+    const dayIndex = (d.getDay() + 6) % 7;
+
+    const btn = document.createElement('button');
+    btn.className = 'tag-btn' + (istHeute ? ' heute' : '') + (key === aktuellerTag ? ' aktiv' : '');
+    btn.innerHTML = (istHeute ? '<span class="heute-punkt"></span>' : '') +
+      '<span class="tag-name">' + TAG_KURZ[dayIndex] + '</span>' +
+      '<span class="tag-datum">' + String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '</span>';
+    
+    btn.onclick = async () => { aktuellerTag = key; ausgewaehlt = []; await allesRendern(); };
+    el.appendChild(btn);
+  }
+}
+
+async function buchungenLaden(){
+  try {
+    const res = await fetch('platz_abfragen.php?datum=' + aktuellerTag + '&t=' + Date.now());
+    if (res.status === 401) { window.location.href = 'login.html'; return; }
+    if (res.ok) {
+      buchungen = await res.json();
+    } else {
+      buchungen = [];
+    }
+  } catch(e) {
+    buchungen = [];
+  }
+}
+
+function zelleIstVorbei(stunde){
+  const jetzt = new Date();
+  const heuteK = datumKey(jetzt);
+  if (aktuellerTag < heuteK) return true;
+  if (aktuellerTag > heuteK) return false;
+  return (jetzt.getHours() > stunde) || (jetzt.getHours() === stunde && jetzt.getMinutes() > 0);
+}
+
+function istEigeneBuchung(bName) {
+  if (!LOGGED_IN_USER || !bName) return false;
+  return bName.toLowerCase().includes(LOGGED_IN_USER.toLowerCase().trim());
+}
+
+function normalisiereName(name) {
+  return (name || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+// Findet zusammenhängende Buchungsblöcke über Stunden UND Plätze hinweg,
+// unabhängig von group_id (funktioniert auch, wenn getrennt reserviert wurde),
+// solange der (normalisierte) Name übereinstimmt und die Zellen benachbart sind.
+function findeVerbundeneBloecke(tagesBuchungen) {
+  const schluessel = (h, c) => h + '_' + c;
+  const nachSchluessel = {};
+  tagesBuchungen.forEach(b => { nachSchluessel[schluessel(Number(b.start_hour), Number(b.court))] = b; });
+
+  const besucht = new Set();
+  const bloecke = [];
+
+  tagesBuchungen.forEach(b => {
+    const startH = Number(b.start_hour), startC = Number(b.court);
+    const startSchluessel = schluessel(startH, startC);
+    if (besucht.has(startSchluessel)) return;
+
+    const zielName = normalisiereName(b.name);
+    const stapel = [[startH, startC]];
+    const zellen = [];
+    besucht.add(startSchluessel);
+
+    while (stapel.length) {
+      const [h, c] = stapel.pop();
+      zellen.push([h, c]);
+      [[h, c - 1], [h, c + 1], [h - 1, c], [h + 1, c]].forEach(([nh, nc]) => {
+        const nk = schluessel(nh, nc);
+        if (besucht.has(nk)) return;
+        const nb = nachSchluessel[nk];
+        if (nb && normalisiereName(nb.name) === zielName) {
+          besucht.add(nk);
+          stapel.push([nh, nc]);
+        }
+      });
+    }
+
+    const stunden = zellen.map(z => z[0]);
+    const courts = zellen.map(z => z[1]);
+    const minH = Math.min(...stunden), maxH = Math.max(...stunden);
+    const minC = Math.min(...courts), maxC = Math.max(...courts);
+    const vollstaendigesRechteck = zellen.length === (maxH - minH + 1) * (maxC - minC + 1);
+
+    bloecke.push({ name: b.name, minH, maxH, minC, maxC, zellen, rechteck: vollstaendigesRechteck });
+  });
+
+  return bloecke;
+}
+
+function planRendern(){
+  const el = document.getElementById('plan');
+  el.innerHTML = '';
+  document.getElementById('plan-datum').textContent = wochentagKey(aktuellerTag) + ', ' + schoneTagAnsicht(aktuellerTag);
+
+  const grid = document.createElement('div');
+  grid.className = 'plan-grid';
+
+  const kopfZeit = document.createElement('div');
+  kopfZeit.className = 'zelle zeit kopf';
+  kopfZeit.textContent = 'Uhrzeit';
+  kopfZeit.style.gridRow = '1'; kopfZeit.style.gridColumn = '1';
+  grid.appendChild(kopfZeit);
+
+  for (let pl = 1; pl <= PLATZ_ANZAHL; pl++){
+    const k = document.createElement('div');
+    k.className = 'zelle kopf'; k.textContent = 'Platz ' + pl;
+    k.style.gridRow = '1'; k.style.gridColumn = String(pl + 1);
+    grid.appendChild(k);
+  }
+
+  // Verbundene Blöcke (über Stunden + Plätze) einmal für den ganzen Tag berechnen.
+  const bloecke = findeVerbundeneBloecke(buchungen);
+  const blockAmStart = {};   // "h_c" (oben-links) -> Block, nur für echte Rechtecke mit >1 Zelle
+  const teilVonBlock = new Set(); // alle Zellen, die zu einem gerenderten Mehrfach-Block gehören
+  bloecke.filter(bl => bl.rechteck && bl.zellen.length > 1).forEach(bl => {
+    blockAmStart[bl.minH + '_' + bl.minC] = bl;
+    bl.zellen.forEach(([h, c]) => teilVonBlock.add(h + '_' + c));
+  });
+
+  STUNDEN.forEach((stunde, zeilenIndex) => {
+    const zeile = zeilenIndex + 2; // Zeile 1 = Kopfzeile
+    const label = document.createElement('div');
+    label.className = 'zelle zeit';
+    label.textContent = String(stunde).padStart(2,'0') + ':00 – ' + String(stunde+1).padStart(2,'0') + ':00 Uhr';
+    label.style.gridRow = String(zeile); label.style.gridColumn = '1';
+    grid.appendChild(label);
+
+    for (let pl = 1; pl <= PLATZ_ANZAHL; pl++){
+      const spalte = pl + 1;
+      const zk = stunde + '_' + pl;
+
+      if (teilVonBlock.has(zk) && !blockAmStart[zk]) {
+        continue; // wird bereits durch einen gespannten Block einer früheren Zeile/Spalte abgedeckt
+      }
+
+      const block = blockAmStart[zk];
+      if (block) {
+        const div = document.createElement('div');
+        div.className = 'zelle gebucht';
+        div.textContent = block.name;
+        div.style.gridRow = `${zeile} / span ${block.maxH - block.minH + 1}`;
+        div.style.gridColumn = `${spalte} / span ${block.maxC - block.minC + 1}`;
+        grid.appendChild(div);
+        continue;
+      }
+
+      const b = buchungen.find(x => Number(x.start_hour) === Number(stunde) && Number(x.court) === Number(pl));
+      const vorbei = zelleIstVorbei(stunde);
+      const markiert = ausgewaehlt.some(s => Number(s.stunde) === Number(stunde) && Number(s.court) === Number(pl));
+
+      if (b) {
+        const div = document.createElement('div');
+        div.className = 'zelle gebucht';
+        div.textContent = b.name;
+        div.style.gridRow = String(zeile); div.style.gridColumn = String(spalte);
+        grid.appendChild(div);
+      } else {
+        const currentCourt = pl;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'zelle' + (vorbei ? ' vorbei' : (markiert ? ' ausgewaehlt' : ' frei'));
+        btn.textContent = vorbei ? 'vorbei' : (markiert ? 'ausgewählt' : 'frei');
+        btn.style.gridRow = String(zeile); btn.style.gridColumn = String(spalte);
+        btn.onclick = async () => {
+          if (vorbei) { toast('Diese Stunde ist vorbei.'); return; }
+          const idx = ausgewaehlt.findIndex(s => s.stunde === stunde && s.court === currentCourt);
+          if (idx >= 0) ausgewaehlt.splice(idx, 1);
+          else ausgewaehlt.push({ stunde, court: currentCourt });
+          await allesRendern();
+        };
+        grid.appendChild(btn);
+      }
+    }
+  });
+
+  el.appendChild(grid);
+}
+
+function auswahlRendern(){
+  const box = document.getElementById('auswahl-zeige');
+  if (ausgewaehlt.length === 0){
+    box.textContent = 'Noch keine Auswahl – bitte oben freie Plätze/Zeiten antippen.';
+    return;
+  }
+  box.innerHTML = '<strong>Ausgewählte Zeitfenster:</strong> ' + ausgewaehlt.length + ' Platz-Stunde(n)';
+}
+
+function formatierePlatzeText(courts) {
+  courts.sort((a,b) => a - b);
+  if (courts.length === 0) return '';
+  if (courts.length === 1) return 'Platz ' + courts[0];
+  
+  let fortlaufend = true;
+  for (let i = 0; i < courts.length - 1; i++) {
+    if (courts[i+1] !== courts[i] + 1) {
+      fortlaufend = false;
+      break;
+    }
+  }
+  return fortlaufend ? 'Platz ' + courts[0] + '–' + courts[courts.length - 1] : 'Platz ' + courts.join(' & ');
+}
+
+function formatiereStundenBereich(stunden) {
+  stunden.sort((a,b) => a - b);
+  const start = stunden[0];
+  const ende = stunden[stunden.length - 1] + 1;
+  return String(start).padStart(2, '0') + ':00 – ' + String(ende).padStart(2, '0') + ':00 Uhr';
+}
+
+function erstelleBloecke(liste) {
+  if (!liste || liste.length === 0) return [];
+  const nachSchluessel = {};
+  
+  liste.forEach(b => {
+    const schluessel = (b.day_date || b.datum || aktuellerTag) + '___' + normalisiereName(b.name);
+    if (!nachSchluessel[schluessel]) nachSchluessel[schluessel] = [];
+    nachSchluessel[schluessel].push(b);
+  });
+
+  const bloecke = [];
+  Object.keys(nachSchluessel).forEach(schluessel => {
+    const eintraege = nachSchluessel[schluessel];
+    eintraege.sort((a,b) => Number(a.start_hour) - Number(b.start_hour) || Number(a.court) - Number(b.court));
+
+    let aktuellerCluster = null;
+    eintraege.forEach(item => {
+      const h = Number(item.start_hour);
+      const c = Number(item.court);
+      if (!aktuellerCluster) {
+        aktuellerCluster = {
+          day_date: item.day_date || item.datum || aktuellerTag,
+          name: item.name,
+          items: [item],
+          courts: [c],
+          stunden: [h]
+        };
+      } else {
+        const maxStunde = Math.max(...aktuellerCluster.stunden);
+        if (h <= maxStunde + 1) {
+          aktuellerCluster.items.push(item);
+          if (!aktuellerCluster.courts.includes(c)) aktuellerCluster.courts.push(c);
+          if (!aktuellerCluster.stunden.includes(h)) aktuellerCluster.stunden.push(h);
+        } else {
+          bloecke.push(aktuellerCluster);
+          aktuellerCluster = {
+            day_date: item.day_date || item.datum || aktuellerTag,
+            name: item.name,
+            items: [item],
+            courts: [c],
+            stunden: [h]
+          };
+        }
+      }
+    });
+
+    if (aktuellerCluster) bloecke.push(aktuellerCluster);
+  });
+
+  return bloecke;
+}
+
+async function loescheBuchungsBlock(items, platzeText, zeitenText) {
+  if (!confirm(`Reservierung (${platzeText}, ${zeitenText}) wirklich stornieren/löschen?`)) return;
+
+  let erfolge = 0;
+  let fehlerServer = '';
+
+  for (const item of items) {
+    try {
+      const res = await fetch('platz_loeschen.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, day_date: item.day_date || item.datum || aktuellerTag })
+      });
+      if (res.status === 401) { window.location.href = 'login.html'; return; }
+      let data = {};
+      try { data = await res.json(); } catch(e) {}
+
+      if (res.ok && data.ok === true) {
+        erfolge++;
+        buchungen = buchungen.filter(b => b !== item && b.id !== item.id);
+      } else {
+        fehlerServer = data.msg || data.error || 'Unbekannter Serverfehler';
+      }
+    } catch(e) {
+      fehlerServer = e.message;
+    }
+  }
+
+  if (erfolge > 0 && !fehlerServer) {
+    toast('Reservierung gelöscht.');
+  } else {
+    toast('Fehler beim Löschen: ' + (fehlerServer || 'Server hat nicht geantwortet.'));
+  }
+
+  await allesRendern();
+}
+
+// Der Server erlaubt Löschen nur dem Ersteller oder Admin (ältere Buchungen ohne Ersteller: nur Admin)
+function darfLoeschen(b) {
+  if (b.ersteller) return b.ersteller === LOGGED_IN_USER || hatSonderrechte;
+  return hatSonderrechte;
+}
+
+function eigeneRendern(){
+  const liste = document.getElementById('eigene-liste');
+  liste.innerHTML = '';
+  const meine = buchungen.filter(b => (istEigeneBuchung(b.name) || b.ersteller === LOGGED_IN_USER) && darfLoeschen(b));
+
+  if (meine.length === 0){
+    liste.innerHTML = '<p style="color:var(--text-gepraemt);font-size:14px;">Keine eigenen Reservierungen für diesen Tag vorhanden.</p>';
+    return;
+  }
+
+  const bloecke = erstelleBloecke(meine);
+
+  bloecke.forEach(block => {
+    const eintrag = document.createElement('div');
+    eintrag.className = 'eigene-eintrag';
+
+    const platzeText = formatierePlatzeText(block.courts);
+    const zeitenText = formatiereStundenBereich(block.stunden);
+
+    eintrag.innerHTML = `<span><strong>${esc(block.name)}</strong> – ${platzeText} (${zeitenText})</span>`;
+    
+    const btn = document.createElement('button');
+    btn.className = 'btn-loeschen';
+    btn.textContent = 'Löschen';
+    btn.onclick = () => loescheBuchungsBlock(block.items, platzeText, zeitenText);
+
+    eintrag.appendChild(btn);
+    liste.appendChild(eintrag);
+  });
+}
+
+async function allesRendern(){
+  tageRendern();
+  await buchungenLaden();
+  planRendern();
+  auswahlRendern();
+  eigeneRendern();
+}
+
+document.getElementById('reservieren-btn').onclick = async () => {
+  if (ausgewaehlt.length === 0) { toast('Bitte oben mindestens eine Zeit auswählen.'); return; }
+
+  let finalName = '';
+  if (aktuellerModus === 'normal') {
+    const n2 = document.getElementById('name2-input').value.trim();
+    if (!n2 || n2.split(/\s+/).length < 2) {
+      toast('Bitte Vor- UND Nachnamen des Mitspielers eingeben!');
+      return;
+    }
+    if (/[<>]/.test(n2)) {
+      toast('Der Name darf kein < oder > enthalten.');
+      return;
+    }
+    finalName = LOGGED_IN_USER + ' & ' + n2;
+  } else {
+    const sonder = document.getElementById('sonder-input').value.trim();
+    if (!sonder) { toast('Bitte eine Bezeichnung eintragen!'); return; }
+    if (/[<>]/.test(sonder)) { toast('Die Bezeichnung darf kein < oder > enthalten.'); return; }
+    finalName = sonder;
+  }
+
+  const zeilen = ausgewaehlt.map(s => ({
+    day_date: aktuellerTag,
+    start_hour: s.stunde,
+    court: s.court,
+    name: finalName
+  }));
+
+  try {
+    const res = await fetch('platz_reservieren.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ zeilen: zeilen, sonder: aktuellerModus === 'sonder' })
+    });
+    if (res.status === 401) { window.location.href = 'login.html'; return; }
+    const data = await res.json();
+    if (data.ok) {
+      toast('Erfolgreich reserviert!');
+      ausgewaehlt = [];
+      document.getElementById('name2-input').value = '';
+      document.getElementById('sonder-input').value = '';
+      await allesRendern();
+    } else {
+      toast('Fehler: ' + (data.msg || 'Reservierung fehlgeschlagen.'));
+    }
+  } catch (e) {
+    toast('Serverfehler beim Reservieren.');
+  }
+};
+
+async function start(){
+  let info;
+  try {
+    const res = await fetch('session_info.php');
+    info = await res.json();
+  } catch(e) {
+    info = { eingeloggt: false };
+  }
+  if (!info.eingeloggt) {
+    window.location.href = 'login.html';
+    return;
+  }
+  LOGGED_IN_USER = info.fullname;
+  hatSonderrechte = info.rolle === 'admin';
+  document.getElementById('user-display-name').textContent = LOGGED_IN_USER;
+  document.getElementById('name-input').value = LOGGED_IN_USER;
+  if (hatSonderrechte) {
+    document.getElementById('modus-bereich').style.display = 'flex';
+  }
+  document.body.style.visibility = 'visible';
+
+  aktuellerTag = datumKey(heuteDatum());
+  await allesRendern();
+  setInterval(allesRendern, 5000);
+}
+start();
+</script>
+</body>
+</html>

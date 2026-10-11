@@ -1,0 +1,17 @@
+# ------------------------------------------------------------------
+# SICHERHEIT (Bericht vom 08.10.2026, Punkt 5 + 11)
+# ------------------------------------------------------------------
+
+# Config mit Secrets – NIEMALS nach GitHub (Vorlage mit Platzhaltern liegt in
+# tn_config.php; echte Werte gehören auf den Server nach /etc/tennis-niederroth/)
+config.php
+
+# Composer – vendor/ gehört auf dem Server AUSSERHALB des Web-Ordners
+/vendor/
+
+# Interne Berichte – weder auf den Webserver noch öffentlich
+PRUEFUNG_SICHERHEIT_RECHT.txt
+
+# Laufzeitdaten (Konten, Buchungen, Zähler) gehören nie ins Repository
+/platzdaten/
+/BACKUP_*/
